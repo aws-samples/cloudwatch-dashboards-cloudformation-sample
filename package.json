@@ -1,0 +1,30 @@
+{
+  "name": "codebuddy",
+  "version": "1.0.0",
+  "description": "Code Buddy is a utility designed to run on AWS that periodically will send an email to a list of team members notifying the assigned code buddy",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "AWS",
+    "Lambda",
+    "S3",
+    "SNS",
+    "CloudWatch"
+  ],
+  "author": "Davide Ungari <ungarida@gmail.com>",
+  "license": "Apache-2.0",
+  "private": true,
+  "dependencies": {
+    "aws-sdk": "^2.72.0",
+    "handlebars": "^4.0.10",
+    "lambda-log": "^1.2.1"
+  },
+  "devDependencies": {
+    "aws-sdk-mock": "^1.7.0",
+    "chai": "^4.1.0",
+    "mocha": "^3.4.2",
+    "sinon": "^2.4.1"
+  }
+}

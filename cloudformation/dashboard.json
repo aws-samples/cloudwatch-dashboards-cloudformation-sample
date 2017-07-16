@@ -1,0 +1,236 @@
+{
+	"widgets": [
+		{
+			"type": "metric",
+			"x": 0,
+			"y": 0,
+			"width": 18,
+			"height": 6,
+			"properties": {
+				"view": "timeSeries",
+				"stacked": false,
+				"metrics": [
+					["AWS/Lambda", "Invocations", "FunctionName", "$${FunctionName}", {
+						"period": 86400,
+						"stat": "Sum"
+					}]
+				],
+				"region": "$${AWS::Region}",
+				"yAxis": {
+					"left": {
+						"min": 0
+					}
+				}
+			}
+		},
+		{
+			"type": "metric",
+			"x": 18,
+			"y": 0,
+			"width": 6,
+			"height": 3,
+			"properties": {
+				"title": "Last Datapoint",
+				"view": "singleValue",
+				"metrics": [
+					["AWS/Lambda", "Invocations", "FunctionName", "$${FunctionName}", {
+						"period": 86400,
+						"stat": "Sum"
+					}]
+				],
+				"region": "$${AWS::Region}",
+				"yAxis": {
+					"left": {
+						"min": 0
+					}
+				},
+				"period": 300
+			}
+		},
+		{
+			"type": "metric",
+			"x": 18,
+			"y": 3,
+			"width": 6,
+			"height": 3,
+			"properties": {
+				"title": "Alarm",
+				"annotations": {
+					"alarms": [
+						"arn:aws:cloudwatch:$${AWS::Region}:$${AWS::AccountId}:alarm:$${InvocationsAlarm}"
+					]
+				},
+				"yAxis": {
+					"left": {
+						"min": 0
+					}
+				},
+				"view": "timeSeries",
+				"stacked": false
+			}
+		},
+		{
+			"type": "metric",
+			"x": 0,
+			"y": 7,
+			"width": 18,
+			"height": 6,
+			"properties": {
+				"view": "timeSeries",
+				"stacked": false,
+				"metrics": [
+					["AWS/Lambda", "Duration", "FunctionName", "$${FunctionName}", {
+						"period": 86400,
+						"stat": "Sum"
+					}]
+				],
+				"region": "$${AWS::Region}",
+				"yAxis": {
+					"left": {
+						"min": 0
+					}
+				}
+			}
+		},
+		{
+			"type": "metric",
+			"x": 18,
+			"y": 7,
+			"width": 6,
+			"height": 3,
+			"properties": {
+				"title": "Last Datapoint",
+				"view": "singleValue",
+				"metrics": [
+					["AWS/Lambda", "Duration", "FunctionName", "$${FunctionName}", {
+						"period": 86400,
+						"stat": "Sum"
+					}]
+				],
+				"region": "$${AWS::Region}",
+				"yAxis": {
+					"left": {
+						"min": 0
+					}
+				},
+				"period": 300
+			}
+		},
+		{
+			"type": "metric",
+			"x": 18,
+			"y": 10,
+			"width": 6,
+			"height": 3,
+			"properties": {
+				"title": "Alarm",
+				"annotations": {
+					"alarms": [
+						"arn:aws:cloudwatch:$${AWS::Region}:$${AWS::AccountId}:alarm:$${DurationAlarm}"
+					]
+				},
+				"yAxis": {
+					"left": {
+						"min": 0
+					}
+				},
+				"view": "timeSeries",
+				"stacked": false
+			}
+		},
+		{
+			"type": "metric",
+			"x": 0,
+			"y": 13,
+			"width": 18,
+			"height": 6,
+			"properties": {
+				"view": "timeSeries",
+				"stacked": false,
+				"metrics": [
+					["AWS/Lambda", "Errors", "FunctionName", "$${FunctionName}", {
+						"period": 86400,
+						"stat": "Sum"
+					}]
+				],
+				"region": "$${AWS::Region}",
+				"yAxis": {
+					"left": {
+						"min": 0
+					}
+				}
+			}
+		},
+		{
+			"type": "metric",
+			"x": 18,
+			"y": 13,
+			"width": 6,
+			"height": 3,
+			"properties": {
+				"title": "Last Datapoint",
+				"view": "singleValue",
+				"metrics": [
+					["AWS/Lambda", "Errors", "FunctionName", "$${FunctionName}", {
+						"period": 86400,
+						"stat": "Sum"
+					}]
+				],
+				"region": "$${AWS::Region}",
+				"yAxis": {
+					"left": {
+						"min": 0
+					}
+				},
+				"period": 300
+			}
+		},
+		{
+			"type": "metric",
+			"x": 18,
+			"y": 16,
+			"width": 6,
+			"height": 3,
+			"properties": {
+				"title": "Alarm",
+				"annotations": {
+					"alarms": [
+						"arn:aws:cloudwatch:$${AWS::Region}:$${AWS::AccountId}:alarm:$${ErrorsAlarm}"
+					]
+				},
+				"yAxis": {
+					"left": {
+						"min": 0
+					}
+				},
+				"view": "timeSeries",
+				"stacked": false
+			}
+		},
+		{
+			"type": "metric",
+			"x": 0,
+			"y": 19,
+			"width": 24,
+			"height": 6,
+			"properties": {
+				"view": "timeSeries",
+				"stacked": false,
+				"metrics": [
+					[ "CodeBuddy", "MemorySizeMB", { "period": 86400, "yAxis": "left" } ],
+					[ ".", "MaxMemoryUsedMB", { "yAxis": "left", "period": 86400 } ]
+				],
+				"region": "$${AWS::Region}",
+				"yAxis": {
+					"left": {
+						"min": 0
+					},
+					"right": {
+						"min": 0
+					}
+				},
+				"title": "Memory"
+			}
+		}
+	]
+}

@@ -1,0 +1,8 @@
+Good morning team!
+
+This is week n.{{weekNumber}}, for this week the code buddies are:
+{{#each codeBuddies}}
+    {{this.assignor}}'s code-buddy is {{this.assignee}}
+{{/each}}
+
+Remember, if your code-buddy is not available today, fallback on the code-buddy of your code-buddy.

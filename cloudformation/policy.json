@@ -1,0 +1,141 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Stmt1497878710000",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:CreateStack",
+                "cloudformation:DeleteStack",
+                "cloudformation:DescribeStacks",
+                "cloudformation:UpdateStack"
+            ],
+            "Resource": [
+                "arn:aws:cloudformation:${REGION}:${ACCOUNTID}:stack/CodeBuddy/*"
+            ]
+        },
+        {
+            "Sid": "Stmt1497878710001",
+            "Effect": "Allow",
+            "Action": [
+                "cloudwatch:*"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "Stmt1497878710002",
+            "Effect": "Allow",
+            "Action": [
+                "events:DeleteRule",
+                "events:DescribeRule",
+                "events:PutRule",
+                "events:PutTargets",
+                "events:RemoveTargets"
+            ],
+            "Resource": [
+                "arn:aws:events:${REGION}:${ACCOUNTID}:rule/CodeBuddySchedulerRule"
+            ]
+        },
+        {
+            "Sid": "Stmt1497878710003",
+            "Effect": "Allow",
+            "Action": [
+                "iam:CreateRole",
+                "iam:DeleteRole",
+                "iam:GetRole",
+                "iam:DeleteRolePolicy",
+                "iam:PassRole",
+                "iam:PutRolePolicy"
+            ],
+            "Resource": [
+                "arn:aws:iam::${ACCOUNTID}:role/CodeBuddyLambdaExecutionRole"
+            ]
+        },
+        {
+            "Sid": "Stmt1497878710004",
+            "Effect": "Allow",
+            "Action": [
+                "lambda:CreateFunction",
+                "lambda:DeleteFunction",
+                "lambda:GetFunction",
+                "lambda:GetFunctionConfiguration",
+                "lambda:UpdateFunctionCode",
+                "lambda:UpdateFunctionConfiguration"
+            ],
+            "Resource": [
+                "arn:aws:lambda:${REGION}:${ACCOUNTID}:function:${FUNCTION_NAME}"
+            ]
+        },
+        {
+            "Sid": "Stmt1497878710005",
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:DeleteLogGroup",
+                "logs:DeleteMetricFilter",
+                "logs:PutMetricFilter"
+            ],
+            "Resource": [
+                "arn:aws:logs:${REGION}:${ACCOUNTID}:log-group:/aws/lambda/${FUNCTION_NAME}:*"
+            ]
+        },
+        {
+            "Sid": "Stmt1497878710006",
+            "Effect": "Allow",
+            "Action": [
+                "logs:DescribeLogGroups"
+            ],
+            "Resource": [
+                "arn:aws:logs:${REGION}:${ACCOUNTID}:log-group::log-stream:"
+            ]
+        },
+        {
+            "Sid": "Stmt1497878710007",
+            "Effect": "Allow",
+            "Action": [
+                "sns:CreateTopic",
+                "sns:DeleteTopic",
+                "sns:GetTopicAttributes",
+                "sns:SetTopicAttributes",
+                "sns:Subscribe"
+            ],
+            "Resource": [
+                "arn:aws:sns:${REGION}:${ACCOUNTID}:CodeBuddy"
+            ]
+        },
+        {
+            "Sid": "Stmt1497878710008",
+            "Effect": "Allow",
+            "Action": [
+                "sns:ListTopics"
+            ],
+            "Resource": [
+                "arn:aws:sns:${REGION}:${ACCOUNTID}:*"
+            ]
+        },
+        {
+            "Sid": "Stmt1497878710009",
+            "Effect": "Allow",
+            "Action": [
+                "s3:CreateBucket",
+                "s3:DeleteBucket"
+            ],
+            "Resource": [
+                "arn:aws:s3:::*"
+            ]
+        },
+        {
+            "Sid": "Stmt1497878710010",
+            "Effect": "Allow",
+            "Action": [
+                "s3:DeleteObject",
+                "s3:PutObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::${BUCKET_NAME}/*"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,208 @@
+Parameters:
+    BucketName:
+        Description: "The S3 bucket where you want to store email template."
+        Type: "String"
+    DashboardName:
+        Description: "The CloudWatch dashboard name."
+        Type: "String"
+    FunctionName:
+        Description: "The Lambda function name."
+        Type: "String"
+    MailingListEmail:
+        Description: "The email address of the mailing list where all the team members are subscribed and use to recieve automatic notifications."
+        Type: "String"
+    RootTemplateFilename:
+        Description: "The handlebars template hosted in the S3 bucket used for the email body."
+        Type: "String"
+    ScheduleExpression:
+        Description: "The cron expression that will set the frequency of notifications."
+        Type: "String"
+    TeamMemberNames:
+        Description: "A list of team members names."
+        Type: "String"
+Resources:
+    CodeBuddyLambdaExecutionRole:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                - Effect: Allow
+                  Principal:
+                    Service:
+                    - lambda.amazonaws.com
+                  Action:
+                    - sts:AssumeRole
+            Path: "/"
+            Policies:
+            - PolicyName: codebuddy
+              PolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                - Effect: Allow
+                  Action:
+                  - logs:*
+                  Resource: "arn:aws:logs:*"
+                - Effect: Allow
+                  Action:
+                  - s3:getObject
+                  - s3:listObjects
+                  Resource: !Join ["", ["arn:aws:s3:::", !Ref BucketName, "/*"]]
+                - Effect: Allow
+                  Action:
+                  - sns:*
+                  Resource: !Ref NotificationSystem
+            RoleName: "CodeBuddyLambdaExecutionRole"
+    DataStorage:
+        Type: "AWS::S3::Bucket"
+        Properties:
+            BucketName: !Ref BucketName
+    LambdaFunction:
+        Type: "AWS::Lambda::Function"
+        Properties:
+            Code:
+                ZipFile: !Sub |
+                    exports.handler = function(event, context, callback) {
+                        callback(null,'Please run `make update-function` from your CodeBuddy project root directory');
+                    };
+            Description: "The function that perform the scheduled notification for CodeBuddy utility"
+            Environment:
+                Variables:
+                    MAILING_LIST: !Ref MailingListEmail
+                    ROOT_TEMPLATE: !Ref RootTemplateFilename
+                    SNS_TOPIC_ARN: !Ref NotificationSystem
+                    TEAM_NAMES: !Ref TeamMemberNames
+            FunctionName: !Ref FunctionName
+            Handler: "index.handler"
+            MemorySize: 512
+            Role:
+                Fn::GetAtt:
+                    - "CodeBuddyLambdaExecutionRole"
+                    - "Arn"
+            Runtime: "nodejs6.10"
+            Timeout: 60
+    LogGroup:
+        Type: "AWS::Logs::LogGroup"
+        Properties:
+            LogGroupName: !Join ["", ["/aws/lambda/", !Ref FunctionName]]
+    MetricFilterMaxMemoryUsed:
+        Type: "AWS::Logs::MetricFilter"
+        DependsOn: LogGroup
+        Properties:
+            LogGroupName: !Join ["", ["/aws/lambda/", !Ref FunctionName]]
+            FilterPattern: "[..., maxMemoryLabel=\"Used:\", maxMemory, maxMemoryUnit=MB]"
+            MetricTransformations:
+                -
+                    MetricValue: "$maxMemory"
+                    MetricNamespace: !Ref FunctionName
+                    MetricName: "MaxMemoryUsedMB"
+    MetricFilterMemorySize:
+        Type: "AWS::Logs::MetricFilter"
+        DependsOn: LogGroup
+        Properties:
+            LogGroupName: !Join ["", ["/aws/lambda/", !Ref FunctionName]]
+            FilterPattern: "[..., sizeLabel=\"Size:\", sizeMemory, sizeMemoryUnit=MB, maxLabel, memoryLabel, maxMemoryLabel=\"Used:\", maxMemory, maxMemoryUnit=MB]"
+            MetricTransformations:
+                -
+                    MetricValue: "$sizeMemory"
+                    MetricNamespace: !Ref FunctionName
+                    MetricName: "MemorySizeMB"
+    NotificationSystem:
+        Type: "AWS::SNS::Topic"
+        Properties:
+            DisplayName: "CodeBuddy"
+            Subscription:
+                -
+                    Endpoint:
+                        Ref: MailingListEmail
+                    Protocol: "email"
+            TopicName: "CodeBuddy"
+    SchedulerEventRule:
+        Type: "AWS::Events::Rule"
+        Properties:
+            Description: "CodeBuddy notification scheduling event"
+            Name: "CodeBuddySchedulerRule"
+            ScheduleExpression: !Ref ScheduleExpression
+            State: "ENABLED"
+            Targets:
+            - Arn: !GetAtt LambdaFunction.Arn
+              Id: "CodeBuddyFunction"
+    DurationAlarm:
+      Type: "AWS::CloudWatch::Alarm"
+      DependsOn: LambdaFunction
+      Properties:
+          AlarmName: "CodeBuddyDurationAlarm"
+          AlarmDescription: "Trigger an alarm if the duration is over 500ms"
+          MetricName: "Duration"
+          Namespace: "AWS/Lambda"
+          Dimensions:
+              -
+                  Name: "FunctionName"
+                  Value: !Ref FunctionName
+          Statistic: "Average"
+          Period: 60
+          EvaluationPeriods: 1
+          Threshold: 500
+          ComparisonOperator: "GreaterThanThreshold"
+    ErrorsAlarm:
+      Type: "AWS::CloudWatch::Alarm"
+      DependsOn: LambdaFunction
+      Properties:
+          AlarmName: "CodeBuddyErrorsAlarm"
+          AlarmDescription: "Trigger an alarm if an error is recorded"
+          MetricName: "Errors"
+          Namespace: "AWS/Lambda"
+          Dimensions:
+              -
+                  Name: "FunctionName"
+                  Value: !Ref FunctionName
+          Statistic: "Sum"
+          Period: 60
+          EvaluationPeriods: 1
+          Threshold: 0
+          ComparisonOperator: "GreaterThanThreshold"
+    InvocationsAlarm:
+        Type: "AWS::CloudWatch::Alarm"
+        DependsOn: LambdaFunction
+        Properties:
+            AlarmName: "CodeBuddyInvocationsAlarm"
+            AlarmDescription: "Trigger an alarm if the function is not invoked at least one per day"
+            MetricName: "Invocations"
+            Namespace: "AWS/Lambda"
+            Dimensions:
+              -
+                  Name: "FunctionName"
+                  Value: !Ref FunctionName
+            Statistic: "Sum"
+            Period: 86400
+            EvaluationPeriods: 1
+            Threshold: 1
+            ComparisonOperator: "LessThanThreshold"
+    ThrottlesAlarm:
+        Type: "AWS::CloudWatch::Alarm"
+        DependsOn: LambdaFunction
+        Properties:
+            AlarmName: "CodeBuddyThrottlesAlarm"
+            AlarmDescription: "Trigger an alarm if a throttle is recorded"
+            MetricName: "Throttles"
+            Namespace: "AWS/Lambda"
+            Dimensions:
+              -
+                  Name: "FunctionName"
+                  Value: !Ref FunctionName
+            Statistic: "Sum"
+            Period: 60
+            EvaluationPeriods: 1
+            Threshold: 0
+            ComparisonOperator: "GreaterThanThreshold"
+    Dashboard:
+        Type: "AWS::CloudWatch::Dashboard"
+        Properties:
+            DashboardName: !Ref DashboardName
+            DashboardBody: !Sub |
+                DASHBOARD_BODY
+Outputs:
+    Dashboard:
+        Description: "Dashboard created to monitor Lambda function"
+        Value: !Sub |
+            "https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home#dashboards:name=${DashboardName}"
